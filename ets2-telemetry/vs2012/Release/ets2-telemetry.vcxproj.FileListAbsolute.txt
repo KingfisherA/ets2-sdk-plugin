@@ -1,0 +1,1 @@
+C:\dev\Visual Studio 2019\Projects\ets2-sdk-plugin\ets2-telemetry\vs2012\Release\ets2-telemetry.dll

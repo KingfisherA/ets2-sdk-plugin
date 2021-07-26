@@ -4,7 +4,7 @@
  * Writes the output into file inside the current directory.
  */
 
-// Windows stuff.
+ // Windows stuff.
 
 #define WINVER 0x0500
 #define _WIN32_WINNT 0x0500
@@ -38,8 +38,8 @@
 #define registerChannel(name, type, to) version_params->register_for_channel(SCS_TELEMETRY_##name, SCS_U32_NIL, SCS_VALUE_TYPE_##type, SCS_TELEMETRY_CHANNEL_FLAG_no_value, telemetry_store_##type, &( to ));
 #define registerSpecificChannel(name, type, handler, to) version_params->register_for_channel(SCS_TELEMETRY_##name, SCS_U32_NIL, SCS_VALUE_TYPE_##type, SCS_TELEMETRY_CHANNEL_FLAG_no_value, handler, &( to ));
 
-SharedMemory *telemMem;
-ets2TelemetryMap_t *telemPtr;
+SharedMemory* telemMem;
+ets2TelemetryMap_t* telemPtr;
 const wchar_t* ets2MmfName = ETS2_PLUGIN_MMF_NAME;
 
 static bool onJob;
@@ -52,14 +52,14 @@ scs_timestamp_t timestamp;
 
 #ifdef SDK_ENABLE_LOGGING
 
-FILE *log_file = NULL;
+FILE* log_file = NULL;
 #endif
 
 
-SCSAPI_VOID telemetry_frame_start(const scs_event_t UNUSED(event), const void *const event_info, const scs_context_t UNUSED(context))
+SCSAPI_VOID telemetry_frame_start(const scs_event_t UNUSED(event), const void* const event_info, const scs_context_t UNUSED(context))
 {
-	static int clearJobTicker = 0;
-	const struct scs_telemetry_frame_start_t *const info = static_cast<const scs_telemetry_frame_start_t *>(event_info);
+	//static int clearJobTicker = 0;
+	const struct scs_telemetry_frame_start_t* const info = static_cast<const scs_telemetry_frame_start_t*>(event_info);
 
 	// The following processing of the timestamps is done so the output
 	// from this plugin has continuous time, it is not necessary otherwise.
@@ -86,7 +86,7 @@ SCSAPI_VOID telemetry_frame_start(const scs_event_t UNUSED(event), const void *c
 	/* Copy over the game timestamp to our telemetry memory */
 	if (telemPtr != NULL)
 	{
-		telemPtr->time = (unsigned int) timestamp;
+		telemPtr->time = (unsigned int)timestamp;
 
 		// Do a non-convential periodic update of this field:
 		telemPtr->tel_rev3.cruiseControl = (telemPtr->tel_rev3.cruiseControlSpeed > 0) ? true : false;
@@ -100,18 +100,19 @@ SCSAPI_VOID telemetry_frame_start(const scs_event_t UNUSED(event), const void *c
 			telemPtr->tel_rev5.onJob = false;
 
 			telemPtr->tel_rev5.jobFinished = true;
-			clearJobTicker = 0;
+			//clearJobTicker = 0;
 		}
+		/*
 		else if (telemPtr->tel_rev5.jobFinished)
 		{
-			clearJobTicker ++;
+			clearJobTicker++;
 
 			if (clearJobTicker > 10)
 			{
 				telemPtr->tel_rev2.jobIncome = 0;
 				telemPtr->tel_rev2.time_abs_delivery = 0;
 				telemPtr->tel_rev2.trailerMass = 0;
-			
+
 				memset(telemPtr->tel_rev2.trailerId, 0, 64);
 				memset(telemPtr->tel_rev2.trailerName, 0, 64);
 
@@ -123,6 +124,7 @@ SCSAPI_VOID telemetry_frame_start(const scs_event_t UNUSED(event), const void *c
 				telemPtr->tel_rev5.jobFinished = false;
 			}
 		}
+		*/
 		else
 		{
 			if (telemPtr->tel_rev2.jobIncome != 0 && telemPtr->tel_rev1.trailer_attached)
@@ -135,7 +137,7 @@ SCSAPI_VOID telemetry_frame_start(const scs_event_t UNUSED(event), const void *c
 
 }
 
-SCSAPI_VOID telemetry_pause(const scs_event_t event, const void *const UNUSED(event_info), const scs_context_t UNUSED(context))
+SCSAPI_VOID telemetry_pause(const scs_event_t event, const void* const UNUSED(event_info), const scs_context_t UNUSED(context))
 {
 	if (telemPtr != NULL)
 	{
@@ -143,74 +145,74 @@ SCSAPI_VOID telemetry_pause(const scs_event_t event, const void *const UNUSED(ev
 	}
 }
 
-SCSAPI_VOID telemetry_configuration(const scs_event_t event, const void *const event_info, const scs_context_t UNUSED(context))
+SCSAPI_VOID telemetry_configuration(const scs_event_t event, const void* const event_info, const scs_context_t UNUSED(context))
 {
 	// This method prints all available attributes of the truck.
 	// On configuration change, this function is called.
-    const struct scs_telemetry_configuration_t *const info = static_cast<const scs_telemetry_configuration_t *>(event_info);
+	const struct scs_telemetry_configuration_t* const info = static_cast<const scs_telemetry_configuration_t*>(event_info);
 
 #ifdef SDK_ENABLE_LOGGING
-	fprintf(log_file,"----\n");
+	fprintf(log_file, "----\n");
 #endif
 
-    for (const scs_named_value_t *current = info->attributes; current->name; ++current)
+	for (const scs_named_value_t* current = info->attributes; current->name; ++current)
 	{
 #ifdef SDK_ENABLE_LOGGING
 		fprintf(log_file, "Name: %s / Val: ", current->name);
-		switch(current->value.type)
+		switch (current->value.type)
 		{
-			case SCS_VALUE_TYPE_bool:
-				fprintf(log_file, "%c (bool)", ((current->value.value_bool.value) ? '1':'0'));
-				break;
+		case SCS_VALUE_TYPE_bool:
+			fprintf(log_file, "%c (bool)", ((current->value.value_bool.value) ? '1' : '0'));
+			break;
 
-			case SCS_VALUE_TYPE_s32:
-				fprintf(log_file, "%l (s32)", current->value.value_s32.value);
-				break;
+		case SCS_VALUE_TYPE_s32:
+			fprintf(log_file, "%l (s32)", current->value.value_s32.value);
+			break;
 
-			case SCS_VALUE_TYPE_u32:
-				fprintf(log_file, "%lu (u32)", current->value.value_u32.value);
-				break;
+		case SCS_VALUE_TYPE_u32:
+			fprintf(log_file, "%lu (u32)", current->value.value_u32.value);
+			break;
 
-			case SCS_VALUE_TYPE_u64:
-				fprintf(log_file, "%lu (u64)", current->value.value_u64.value);
-				break;
+		case SCS_VALUE_TYPE_u64:
+			fprintf(log_file, "%lu (u64)", current->value.value_u64.value);
+			break;
 
-			case SCS_VALUE_TYPE_float:
-				fprintf(log_file, "%f (float)", current->value.value_float.value);
-				break;
+		case SCS_VALUE_TYPE_float:
+			fprintf(log_file, "%f (float)", current->value.value_float.value);
+			break;
 
-			case SCS_VALUE_TYPE_double:
-				fprintf(log_file, "%f (double)", current->value.value_double.value);
-				break;
+		case SCS_VALUE_TYPE_double:
+			fprintf(log_file, "%f (double)", current->value.value_double.value);
+			break;
 
-				/*
-			case SCS_VALUE_TYPE_fvector:
-				fprintf(log_file, "%s (string)", current->value.value_string.value);
-				break;
+			/*
+		case SCS_VALUE_TYPE_fvector:
+			fprintf(log_file, "%s (string)", current->value.value_string.value);
+			break;
 
-			case SCS_VALUE_TYPE_dvector:
-				fprintf(log_file, "%s (string)", current->value.value_string.value);
-				break;
+		case SCS_VALUE_TYPE_dvector:
+			fprintf(log_file, "%s (string)", current->value.value_string.value);
+			break;
 
-			case SCS_VALUE_TYPE_euler:
-				fprintf(log_file, "%s (string)", current->value.value_string.value);
-				break;
+		case SCS_VALUE_TYPE_euler:
+			fprintf(log_file, "%s (string)", current->value.value_string.value);
+			break;
 
-			case SCS_VALUE_TYPE_fplacement:
-				fprintf(log_file, "%s (string)", current->value.value_string.value);
-				break;
+		case SCS_VALUE_TYPE_fplacement:
+			fprintf(log_file, "%s (string)", current->value.value_string.value);
+			break;
 
-			case SCS_VALUE_TYPE_dplacement:
-				fprintf(log_file, "%s (string)", current->value.value_string.value);
-				break;*/
+		case SCS_VALUE_TYPE_dplacement:
+			fprintf(log_file, "%s (string)", current->value.value_string.value);
+			break;*/
 
-			case SCS_VALUE_TYPE_string:
-				fprintf(log_file, "%s (string)", current->value.value_string.value);
-				break;
+		case SCS_VALUE_TYPE_string:
+			fprintf(log_file, "%s (string)", current->value.value_string.value);
+			break;
 
-			default:
-				fprintf(log_file, "???? (%d)", current->value.type);
-				break;
+		default:
+			fprintf(log_file, "???? (%d)", current->value.type);
+			break;
 		}
 
 		fprintf(log_file, "\r\n");
@@ -222,36 +224,36 @@ SCSAPI_VOID telemetry_configuration(const scs_event_t event, const void *const e
 }
 
 /******* STORING OF SEVERAL SCS DATA TYPES *******/
-SCSAPI_VOID telemetry_store_float(const scs_string_t name, const scs_u32_t index, const scs_value_t *const value, const scs_context_t context)
+SCSAPI_VOID telemetry_store_float(const scs_string_t name, const scs_u32_t index, const scs_value_t* const value, const scs_context_t context)
 {
-	if(!value) return;
+	if (!value) return;
 	assert(value);
 	assert(value->type == SCS_VALUE_TYPE_float);
 	assert(context);
-	*static_cast<float *>(context) = value->value_float.value;
+	*static_cast<float*>(context) = value->value_float.value;
 }
 
-SCSAPI_VOID telemetry_store_s32(const scs_string_t name, const scs_u32_t index, const scs_value_t *const value, const scs_context_t context)
+SCSAPI_VOID telemetry_store_s32(const scs_string_t name, const scs_u32_t index, const scs_value_t* const value, const scs_context_t context)
 {
-	if(!value) return;
+	if (!value) return;
 	assert(value);
 	assert(value->type == SCS_VALUE_TYPE_s32);
 	assert(context);
-	*static_cast<int *>(context) = value->value_s32.value;
+	*static_cast<int*>(context) = value->value_s32.value;
 }
 
-SCSAPI_VOID telemetry_store_u32(const scs_string_t name, const scs_u32_t index, const scs_value_t *const value, const scs_context_t context)
+SCSAPI_VOID telemetry_store_u32(const scs_string_t name, const scs_u32_t index, const scs_value_t* const value, const scs_context_t context)
 {
-	if(!value) return;
+	if (!value) return;
 	assert(value);
 	assert(value->type == SCS_VALUE_TYPE_u32);
 	assert(context);
-	*static_cast<unsigned int *>(context) = value->value_u32.value;
+	*static_cast<unsigned int*>(context) = value->value_u32.value;
 }
 
-SCSAPI_VOID telemetry_store_bool(const scs_string_t name, const scs_u32_t index, const scs_value_t *const value, const scs_context_t context)
+SCSAPI_VOID telemetry_store_bool(const scs_string_t name, const scs_u32_t index, const scs_value_t* const value, const scs_context_t context)
 {
-	if(!context) return;
+	if (!context) return;
 	/*assert(value);
 	assert(value->type == SCS_VALUE_TYPE_bool);*/
 	//assert(context);
@@ -259,46 +261,46 @@ SCSAPI_VOID telemetry_store_bool(const scs_string_t name, const scs_u32_t index,
 	{
 		if (value->value_bool.value == 0)
 		{
-			*static_cast<bool *>(context) = false;
+			*static_cast<bool*>(context) = false;
 		}
 		else
 		{
-			*static_cast<bool *>(context) = true;
+			*static_cast<bool*>(context) = true;
 		}
 	}
 	else
 	{
-		*static_cast<bool *>(context) = false;
+		*static_cast<bool*>(context) = false;
 	}
 }
 
-SCSAPI_VOID telemetry_store_fvector(const scs_string_t name, const scs_u32_t index, const scs_value_t *const value, const scs_context_t context)
+SCSAPI_VOID telemetry_store_fvector(const scs_string_t name, const scs_u32_t index, const scs_value_t* const value, const scs_context_t context)
 {
-	if(!value) return;
+	if (!value) return;
 	assert(value);
 	assert(value->type == SCS_VALUE_TYPE_fvector);
 	assert(context);
-	*(static_cast<float *>(context)+0) = value->value_fvector.x;
-	*(static_cast<float *>(context)+1) = value->value_fvector.y;
-	*(static_cast<float *>(context)+2) = value->value_fvector.z;
+	*(static_cast<float*>(context) + 0) = value->value_fvector.x;
+	*(static_cast<float*>(context) + 1) = value->value_fvector.y;
+	*(static_cast<float*>(context) + 2) = value->value_fvector.z;
 }
 
-SCSAPI_VOID telemetry_store_dplacement(const scs_string_t name, const scs_u32_t index, const scs_value_t *const value, const scs_context_t context)
+SCSAPI_VOID telemetry_store_dplacement(const scs_string_t name, const scs_u32_t index, const scs_value_t* const value, const scs_context_t context)
 {
-	if(!value) return;
+	if (!value) return;
 	assert(value);
 	assert(value->type == SCS_VALUE_TYPE_dplacement);
 	assert(context);
 
 	// Messy hack to store the acceleration and orientation values into our telemetry struct
 	// It is neccesary that these are put together, otherwise it may overwrite over values.
-	*(static_cast<float *>(context)+0) = (float)value->value_dplacement.position.x;
-	*(static_cast<float *>(context)+1) = (float)value->value_dplacement.position.y;
-	*(static_cast<float *>(context)+2) = (float)value->value_dplacement.position.z;
+	*(static_cast<float*>(context) + 0) = (float)value->value_dplacement.position.x;
+	*(static_cast<float*>(context) + 1) = (float)value->value_dplacement.position.y;
+	*(static_cast<float*>(context) + 2) = (float)value->value_dplacement.position.z;
 
-	*(static_cast<float *>(context)+3) = value->value_dplacement.orientation.heading;
-	*(static_cast<float *>(context)+4) = value->value_dplacement.orientation.pitch;
-	*(static_cast<float *>(context)+5) = value->value_dplacement.orientation.roll;
+	*(static_cast<float*>(context) + 3) = value->value_dplacement.orientation.heading;
+	*(static_cast<float*>(context) + 4) = value->value_dplacement.orientation.pitch;
+	*(static_cast<float*>(context) + 5) = value->value_dplacement.orientation.roll;
 }
 
 
@@ -308,27 +310,29 @@ SCSAPI_VOID telemetry_store_dplacement(const scs_string_t name, const scs_u32_t 
  * See scssdk_telemetry.h
  */
 
-SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_init_params_t *const params)
+SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_init_params_t* const params)
 {
 	// We currently support only one version.
 	if (version != SCS_TELEMETRY_VERSION_1_00) {
 		return SCS_RESULT_unsupported;
 	}
 
-	const scs_telemetry_init_params_v100_t *const version_params = static_cast<const scs_telemetry_init_params_v100_t *>(params);
+	const scs_telemetry_init_params_v100_t* const version_params = static_cast<const scs_telemetry_init_params_v100_t*>(params);
 
-    if (version_params == NULL)
-    {
-        return SCS_RESULT_generic_error;
-    }
+	//scs_log_t functionPointer = version_params->common.log;
+
+	if (version_params == NULL)
+	{
+		return SCS_RESULT_generic_error;
+	}
 
 	/*** ACQUIRE SHARED MEMORY BUFFER ***/
 	telemMem = new SharedMemory(ets2MmfName, ETS2_PLUGIN_MMF_SIZE);
 
-    if (telemMem == NULL)
-    {
-        return SCS_RESULT_generic_error;
-    }
+	if (telemMem == NULL)
+	{
+		return SCS_RESULT_generic_error;
+	}
 
 	if (telemMem->Hooked() == false)
 	{
@@ -336,21 +340,23 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 	}
 
 #ifdef SDK_ENABLE_LOGGING
-    log_file = fopen("telemetry.log", "wt");
+	log_file = fopen("telemetry.log", "wt");
 #endif
-	telemPtr = (ets2TelemetryMap_t*) (telemMem->GetBuffer());
+	telemPtr = (ets2TelemetryMap_t*)(telemMem->GetBuffer());
 
 	if (telemPtr == NULL)
-    {
-        return SCS_RESULT_generic_error;
+	{
+		return SCS_RESULT_generic_error;
 	}
 
 	memset(telemPtr, 0, ETS2_PLUGIN_MMF_SIZE);
 
 	/*** INITIALIZE TELEMETRY MAP TO DEFAULT ***/
+
 	telemPtr->paused = 1;
 	telemPtr->time = 0;
-
+	strcpy(&telemPtr->tel_revId.gameID[0], version_params->common.game_id);
+	strcpy(&telemPtr->tel_revId.gameName[0], version_params->common.game_name);
 	telemPtr->tel_revId.ets2_telemetry_plugin_revision = ETS2_PLUGIN_REVID;
 	telemPtr->tel_revId.ets2_version_major = SCS_GET_MAJOR_VERSION(version_params->common.game_version);
 	telemPtr->tel_revId.ets2_version_minor = SCS_GET_MINOR_VERSION(version_params->common.game_version);
@@ -384,7 +390,7 @@ SCSAPI_RESULT scs_telemetry_init(const scs_u32_t version, const scs_telemetry_in
 	registerChannel(TRUCK_CHANNEL_speed, float, telemPtr->tel_rev1.speed);
 	registerChannel(TRUCK_CHANNEL_local_linear_acceleration, fvector, telemPtr->tel_rev1.accelerationX);
 	registerChannel(TRUCK_CHANNEL_world_placement, dplacement, telemPtr->tel_rev1.coordinateX);
-	
+
 	registerChannel(TRUCK_CHANNEL_engine_gear, s32, telemPtr->tel_rev1.gear);
 	registerChannel(TRUCK_CHANNEL_displayed_gear, s32, telemPtr->tel_rev4.gearDashboard);
 
@@ -479,7 +485,7 @@ SCSAPI_VOID scs_telemetry_shutdown(void)
 		telemMem->Close();
 	}
 #ifdef SDK_ENABLE_LOGGING
-    fclose(log_file);
+	fclose(log_file);
 #endif
 }
 

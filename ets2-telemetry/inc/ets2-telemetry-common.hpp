@@ -32,6 +32,8 @@ typedef struct ets2TelemetryMap_s
 	struct
 	{
 		unsigned int ets2_telemetry_plugin_revision;
+		char gameID[64];
+		char gameName[64];
 		unsigned int ets2_version_major;
 		unsigned int ets2_version_minor;
 	} tel_revId;
